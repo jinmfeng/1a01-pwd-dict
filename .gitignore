@@ -1,0 +1,9 @@
+﻿.vs/
+Debug/
+Release/
+
+*.suo
+*.db
+*.opendb
+*.ipch
+*.filters
