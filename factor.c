@@ -73,10 +73,30 @@ int FactorPermute(Factor *pFactor, int nCombine, int sn, char *buf, int bufLen)
     memset(buf, 0, bufLen);
 
     // 挑出nCombine个因子进行排列,输出第sn个的排列方案
-    // 先随便返回点什么,以后补充
-    sprintf(buf, "xidian");
+    int *permute = malloc(sizeof(int)*nCombine);
+    memset(permute, 0, sizeof(int)*nCombine);
 
-    return strlen("xidian") + 1;
+    // 第n个组合方案的计算公式
+    for (int i = 0; i < nCombine; i++) {
+        permute[i] = (sn / (unsigned int)pow(pFactor->count, nCombine-i-1)) % (pFactor->count);
+    }
+
+    // 计算缓冲区是否足够
+    int totalLen = 0;
+    for (int i = 0; i < nCombine; i++) {
+        totalLen += strlen(pFactor->pElement[permute[i]]);
+    }
+    if (totalLen + 1 > bufLen) {
+        printf("ERR: buffer is too small, need %d bytes", totalLen + 1);
+        return 0;
+    }
+
+    // 写缓冲区
+    for (int i = 0; i < nCombine; i++) {
+        strcat(buf, pFactor->pElement[permute[i]]);
+    }
+
+    return strlen(buf) + 1;
 }
 
 void FactorClear(Factor *pFactor)
