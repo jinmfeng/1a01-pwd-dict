@@ -5,15 +5,53 @@
 
 Factor* FactorReadFromFile(char *pszSamplePath, Factor *pFactor)
 {
-    // 先固定写成5个因子,以后改成从文件中读取
-    pFactor->count = 5;
-    pFactor->pElement = malloc(sizeof(char*)*pFactor->count);
+    FILE *pSample = fopen(pszSamplePath, "rt");
+    if (pSample == NULL) {
+        printf("ERR: Cannot open file %s\n", pszSamplePath);
+        return NULL;
+    }
 
-    pFactor->pElement[0] = "xidian";
-    pFactor->pElement[1] = "2016";
-    pFactor->pElement[2] = "12";
-    pFactor->pElement[3] = "hello";
-    pFactor->pElement[4] = "github";
+    // 获取文件尺寸
+    fseek(pSample, 0, SEEK_END);
+    int size = ftell(pSample) + 1;
+
+    // 读取内容
+    char *buf = malloc(size);
+    memset(buf, 0, size);
+
+    fseek(pSample, 0, SEEK_SET);
+    int read = fread(buf, sizeof(char), size, pSample);
+
+    // 计数换行符的个数
+    int count = 0;
+    char *pNext = strchr(buf, '\n');
+    while (pNext) {
+        count++;
+        pNext = strchr(pNext+1, '\n');
+    }
+
+    // 为因子分配空间. 如果有n个换行符,那么至多可能有n+1个因子,因为末尾可能有也可能没有换行符
+    pFactor->pElement = malloc(sizeof(char*)*(count+1));
+    memset(pFactor->pElement, 0, sizeof(char*)*(count + 1)); // 为分配的空间初始化为全0是一个好习惯
+    pFactor->count = 0;
+
+    char *pElement = strtok(buf, "\n");
+    while (pElement) {
+        pFactor->pElement[pFactor->count] = pElement;
+        pFactor->count++;
+        pElement = strtok(NULL, "\n");
+    }
+
+    // debug trace
+    printf("INFO: read %d factors:\n", pFactor->count);
+    for (int i = 0; i < pFactor->count; i++) {
+        printf("%s", pFactor->pElement[i]);
+        if (i % 8 == 7) printf("\n");
+        else printf("\t");
+    }
+    printf("\n");
+
+    fclose(pSample);
 
     return pFactor;
 }
